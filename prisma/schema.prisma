@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Vehicle {
+  id              Int       @id @default(autoincrement())
+  plate           String    @unique
+  model           String
+  year            Int?
+  fuelType        String?
+  cargoCapacity   Float?
+  location        String?
+  trips           Trip[]
+  fuelRecords     FuelRecord[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("vehicles")
+}
+
+model Driver {
+  id              Int       @id @default(autoincrement())
+  name            String
+  cpf             String    @unique
+  cnhCategory     String?
+  cnhNumber       String?
+  cnhExpiration   DateTime?
+  trips           Trip[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("drivers")
+}
+
+model Route {
+  id                String    @id
+  name              String
+  originState       String
+  destinationState  String
+  trips             Trip[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("routes")
+}
+
+model Trip {
+  id                Int         @id @default(autoincrement())
+  competenceMonth   String
+  departureDate     DateTime
+  routeId           String
+  route             Route       @relation(fields: [routeId], references: [id])
+  vehicleId         Int
+  vehicle           Vehicle     @relation(fields: [vehicleId], references: [id])
+  driverId          Int
+  driver            Driver      @relation(fields: [driverId], references: [id])
+  initialKm         Float
+  finalKm           Float?
+  serviceStart      DateTime
+  serviceEnd        DateTime?
+  taskId            String?
+  invoiceNumber     String?
+  deliveryStatus    Boolean     @default(false)
+  manifestNumber    String?
+  itemsQuantity     Int?
+  invoiceTotal      Float?
+  cubicMeters       Float?
+  logisticsCost     Float?
+  fuelRecords       FuelRecord[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@map("trips")
+}
+
+model FuelRecord {
+  id              Int       @id @default(autoincrement())
+  tripId          Int
+  trip            Trip      @relation(fields: [tripId], references: [id])
+  vehicleId       Int
+  vehicle         Vehicle   @relation(fields: [vehicleId], references: [id])
+  liters          Float
+  fuelType        String
+  pricePerLiter   Float
+  totalCost       Float
+  date            DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("fuel_records")
+}
